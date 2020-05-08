@@ -413,6 +413,7 @@ layer parse_yolo(list *options, size_params params)
 
     l.label_smooth_eps = option_find_float_quiet(options, "label_smooth_eps", 0.0f);
     l.scale_x_y = option_find_float_quiet(options, "scale_x_y", 1);
+    l.objectness_smooth = option_find_int_quiet(options, "objectness_smooth", 0);
     l.max_delta = option_find_float_quiet(options, "max_delta", FLT_MAX);   // set 10
     l.iou_normalizer = option_find_float_quiet(options, "iou_normalizer", 0.75);
     l.cls_normalizer = option_find_float_quiet(options, "cls_normalizer", 1);
@@ -519,6 +520,7 @@ layer parse_gaussian_yolo(list *options, size_params params) // Gaussian_YOLOv3
 
     l.label_smooth_eps = option_find_float_quiet(options, "label_smooth_eps", 0.0f);
     l.scale_x_y = option_find_float_quiet(options, "scale_x_y", 1);
+    l.objectness_smooth = option_find_int_quiet(options, "objectness_smooth", 0);
     l.max_delta = option_find_float_quiet(options, "max_delta", FLT_MAX);   // set 10
     l.uc_normalizer = option_find_float_quiet(options, "uc_normalizer", 1.0);
     l.iou_normalizer = option_find_float_quiet(options, "iou_normalizer", 0.75);
@@ -1123,12 +1125,13 @@ void parse_net_options(list *options, network *net)
     net->burn_in = option_find_int_quiet(options, "burn_in", 0);
 #ifdef GPU
     if (net->gpu_index >= 0) {
-        int compute_capability = get_gpu_compute_capability(net->gpu_index);
+        char device_name[1024];
+        int compute_capability = get_gpu_compute_capability(net->gpu_index, device_name);
 #ifdef CUDNN_HALF
         if (compute_capability >= 700) net->cudnn_half = 1;
         else net->cudnn_half = 0;
 #endif// CUDNN_HALF
-        fprintf(stderr, " compute_capability = %d, cudnn_half = %d \n", compute_capability, net->cudnn_half);
+        fprintf(stderr, " %d : compute_capability = %d, cudnn_half = %d, GPU: %s \n", net->gpu_index, compute_capability, net->cudnn_half, device_name);
     }
     else fprintf(stderr, " GPU isn't used \n");
 #endif// GPU
